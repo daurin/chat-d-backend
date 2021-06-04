@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "node-terminal",
+            "name": "Start nodemon",
+            "request": "launch",
+            "command": "npm run start-nodemon",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Start Dev",
+            "request": "launch",
+            "command": "npm run start-dev",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
