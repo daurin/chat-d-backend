@@ -13,6 +13,13 @@
             "request": "launch",
             "command": "npm run start-dev",
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Start Pm2",
+            "request": "launch",
+            "command": "npm run start-pm2",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

@@ -1,19 +1,19 @@
-export class PubMessage {
-    target?: string;
+export default class PubSubMessage {
+    target: string;
     data: any;
     broadcast: boolean;
 
-    constructor(params: { target?: string, data: any, broadcast?: boolean }) {
+    constructor(params: { target: string, data: any, broadcast?: boolean }) {
         this.target = params.target;
         this.data = params.data;
-        this.broadcast = params.broadcast == null ? false : params.broadcast;
+        this.broadcast = params.broadcast || false;
     }
 
-    static fromJson(json: string): PubMessage {
+    static fromJson(json: string): PubSubMessage {
 
         const parsedJson = JSON.parse(json);
 
-        return new PubMessage(
+        return new PubSubMessage(
             {
                 target: parsedJson.target,
                 data: parsedJson.data,

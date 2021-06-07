@@ -1,13 +1,14 @@
 import HttpServer from "./server/http_server";
-import { PubSub } from "./server/pub_sub";
 import WebSocketServer from './server/web_socket_server';
-import {ConfigService} from './server/config_service';
+import ConfigService from './server/config_service';
+import PubSubRedis from './server/pub_sub_redis';
 
-console.log('Hello Word');
-
-const httpServer=new HttpServer();
-const pubSubServer = new PubSub(new ConfigService());
-const webSocketServer= new WebSocketServer(pubSubServer, {httpServer: httpServer.server});
+const httpServer = new HttpServer();
+const pubSubServer = new PubSubRedis();
+const webSocketServer = new WebSocketServer({
+    httpServer: httpServer.server,
+    pubSub: pubSubServer,
+});
 httpServer.init();
 webSocketServer.init();
 
@@ -18,7 +19,7 @@ process.on('SIGTERM', () => {
     webSocketServer.close();
     process.exit(0);
 });
-process.on('uncaughtException', (err)=>{
+process.on('uncaughtException', (err) => {
     console.error(err);
     httpServer.close();
     webSocketServer.close();
