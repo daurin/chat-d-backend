@@ -28,7 +28,7 @@ class HttpServer {
     private onUpgrade(req:IncomingMessage, socket:Socket, head:Buffer):void{
         let validationResult: Boolean = true;
         if (validationResult) {
-
+            
         } else {
             socket.write('HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
                 'Upgrade: WebSocket\r\n' +

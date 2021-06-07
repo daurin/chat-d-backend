@@ -12,7 +12,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./build && tsc",
     "start-nodemon": "NODE_ENV='development' nodemon index.ts",
-    "start-dev": "npm run build && node build/index.js"
+    "start-dev": "npm run build && node build/index.js",
+    "start-pm2" : "pm2 start --name chat -i max ./build/index.js"
   },
   "keywords": [],
   "author": "",

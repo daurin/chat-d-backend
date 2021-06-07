@@ -1,25 +1,29 @@
 import { randomUUID } from 'crypto';
 import Http from 'http';
 import WebSocket from 'ws';
-import { PubMessage } from '../data_definitions/pub_sub';
-import {PubSub} from './pub_sub'
+import PubSubMessage from './models/pub_sub_message';
+import PubSubRedis from './pub_sub_redis'
 import {v1 as generateUuid} from 'uuid'
 
 class WebSocketServer {
     private webSocketServer: WebSocket.Server;
     private sockets: {[key: string]: WebSocket};
+    private pubSub:PubSubRedis;
 
-    constructor(private readonly pubSub: PubSub,options: {
+    constructor(options: {
+        pubSub: PubSubRedis,
         httpServer: Http.Server,
     }) {
         this.onConnection = this.onConnection.bind(this)
-
+        
         this.webSocketServer = new WebSocket.Server({
             server: options.httpServer,
             path: '/chat'
         });
 
-        this.sockets = {}
+        this.pubSub=options.pubSub;
+
+        this.sockets = {};
     }
 
     init() {
@@ -32,7 +36,7 @@ class WebSocketServer {
         this.webSocketServer.close();
     }
 
-    private onBroadCast(message:PubMessage) {
+    private onBroadCast(message:PubSubMessage) {
         Object.values(this.sockets).forEach((webSocket)=>{
             if(webSocket==null) return;
 
@@ -42,14 +46,14 @@ class WebSocketServer {
         })
     }
 
-    private onPubMessage(message:PubMessage) {
+    private onPubMessage(message:PubSubMessage) {
         if(message.target == null && message.broadcast==false) return;
 
         if(message.broadcast) return this.onBroadCast(message);
 
         if(message.target!=null){
         
-            const webSocket = this.sockets[message.target];
+            const webSocket:WebSocket = this.sockets[message.target];
 
             if(webSocket==null) return;
     
@@ -62,21 +66,23 @@ class WebSocketServer {
 
     private onConnection(webSocket: WebSocket): void {
         webSocket.on('message', (data) => this.onMessage(webSocket, data));
+        webSocket.on('close', (data) => this.onClose(webSocket));
         this.sockets[generateUuid()] = webSocket;
     }
 
     private onMessage(webSocket: WebSocket, data: WebSocket.Data): void {
         console.log(data.toString());
-        this.pubSub.publish(new PubMessage(
+        this.pubSub.publish(new PubSubMessage(
             {
+                target:'',
                 data:data,
                 broadcast: true
             }
         ))
     }
 
-    private onClose(): void {
-
+    private onClose(webSocket:WebSocket): void {
+        
     }
 }
 

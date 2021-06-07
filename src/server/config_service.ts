@@ -1,4 +1,4 @@
-export class ConfigService {
+export default class ConfigService {
     values: {[key:string]: any};
 
     constructor() {
