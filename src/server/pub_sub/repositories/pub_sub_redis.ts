@@ -1,14 +1,16 @@
 import EventEmitter from "events";
 import { ClientOpts, RedisClient } from "redis";
-import PubSubMessage from "./models/pub_sub_message";
-import ConfigService from "./config_service";
+import PubSubMessage from "../models/pub_sub_message";
+import ConfigService from "../../config_service";
+import { PubSubRedisOptions } from "../models/pub_sub_interface";
+import IPubSub from '../models/pub_sub_interface';
 
-class PubSubRedis {
+class PubSubRedis implements IPubSub{
 
     private pub: RedisClient;
     private sub: RedisClient;
-    private eventEmitter: EventEmitter;
-    private channel: string;
+    readonly eventEmitter: EventEmitter;
+    readonly channel: string;
 
     constructor(
         // config: ConfigService, 
@@ -56,16 +58,10 @@ class PubSubRedis {
         return this.eventEmitter;
     }
 
-    publish(value: PubSubMessage) {
+    publish(value: PubSubMessage):void{
         this.pub.publish(this.channel, value.toJSON());
     }
 
-}
-
-interface PubSubRedisOptions {
-    host: string,
-    port: number,
-    channel:string,
 }
 
 export default PubSubRedis;
