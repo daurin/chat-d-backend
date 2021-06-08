@@ -1,10 +1,10 @@
-export default class PubSubMessage {
-    target: string;
+class PubSubMessage {
+    target?: string | null;
     data: any;
     broadcast: boolean;
 
-    constructor(params: { target: string, data: any, broadcast?: boolean }) {
-        this.target = params.target;
+    constructor(params: { target?: string, data: any, broadcast?: boolean }) {
+        this.target = params.target || null;
         this.data = params.data;
         this.broadcast = params.broadcast || false;
     }
@@ -31,3 +31,5 @@ export default class PubSubMessage {
         });
     }
 }
+
+export default PubSubMessage;

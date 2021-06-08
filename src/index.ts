@@ -1,10 +1,9 @@
 import HttpServer from "./server/http_server";
 import WebSocketServer from './server/web_socket_server';
-import ConfigService from './server/config_service';
-import PubSubRedis from './server/pub_sub_redis';
+import PubSub from './server/pub_sub/pub_sub';
 
 const httpServer = new HttpServer();
-const pubSubServer = new PubSubRedis();
+const pubSubServer = new PubSub();
 const webSocketServer = new WebSocketServer({
     httpServer: httpServer.server,
     pubSub: pubSubServer,
@@ -24,6 +23,15 @@ process.on('uncaughtException', (err) => {
     httpServer.close();
     webSocketServer.close();
     process.exit(1);
+});
+process.once('SIGUSR2', function () {
+    process.kill(process.pid, 'SIGUSR2');
+});
+
+process.on('SIGINT', function () {
+    // this is only called on ctrl+c, not restart
+    process.kill(process.pid, 'SIGINT');
+    process.exit();
 });
 
 // sudo lsof -i :6969
