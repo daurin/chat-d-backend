@@ -41,9 +41,9 @@ class PubSubRedis implements IPubSub{
 
             try {
 
-                let parsedData = PubSubMessage.fromJson(data)
+                let parsedData = PubSubMessage.fromJson(JSON.parse(data))
 
-                this.eventEmitter.emit('data', parsedData);
+                this.eventEmitter.emit('data',parsedData);
 
             } catch (err) {
 
@@ -59,7 +59,7 @@ class PubSubRedis implements IPubSub{
     }
 
     publish(value: PubSubMessage):void{
-        this.pub.publish(this.channel, value.toJSON());
+        this.pub.publish(this.channel, JSON.stringify(value.toJson()));
     }
 
 }

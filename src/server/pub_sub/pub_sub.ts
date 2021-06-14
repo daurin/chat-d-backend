@@ -1,7 +1,6 @@
 import EventEmitter from "events";
 import IPubSub, { PubSubRedisOptions } from "./models/pub_sub_interface";
 import PubSubMessage from "./models/pub_sub_message";
-import pub_sub_message from "./models/pub_sub_message";
 import PubSubRedis from './repositories/pub_sub_redis';
 
 class PubSub implements IPubSub{

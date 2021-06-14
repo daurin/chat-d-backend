@@ -1,5 +1,5 @@
 import HttpServer from "./server/http_server";
-import WebSocketServer from './server/web_socket_server';
+import WebSocketServer from './server/web_socket_server/web_socket_server';
 import PubSub from './server/pub_sub/pub_sub';
 
 const httpServer = new HttpServer();

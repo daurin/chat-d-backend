@@ -1,35 +1,34 @@
 class PubSubMessage {
-    target?: string | null;
-    data: any;
-    broadcast: boolean;
+    readonly target?: string | undefined;
+    readonly data: any;
+    
 
-    constructor(params: { target?: string, data: any, broadcast?: boolean }) {
-        this.target = params.target || null;
+    constructor(params: PubSubMessageParams) {
+        this.target = params.target || undefined;
         this.data = params.data;
-        this.broadcast = params.broadcast || false;
     }
 
-    static fromJson(json: string): PubSubMessage {
-
-        const parsedJson = JSON.parse(json);
-
+    static fromJson(json: PubSubMessageParams): PubSubMessage {
         return new PubSubMessage(
             {
-                target: parsedJson.target,
-                data: parsedJson.data,
-                broadcast: parsedJson.broadcast
+                target: json.target,
+                data: json.data,
             }
         );
 
     }
 
-    toJSON(): string {
-        return JSON.stringify({
+    toJson(): Object {
+        return {
             data: this.data,
-            target: this.target,
-            broadcast: this.broadcast
-        });
+            targets: this.target || undefined
+        };
     }
+}
+
+interface PubSubMessageParams{
+    readonly target?: string | undefined;
+    readonly data: any;
 }
 
 export default PubSubMessage;
