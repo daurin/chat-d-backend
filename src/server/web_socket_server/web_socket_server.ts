@@ -6,10 +6,11 @@ import { v1 as generateUuid } from 'uuid'
 import PubSub from '../pub_sub/pub_sub';
 import WebSocketRequest from './models/web_socket_request';
 import requestStructureMiddleware from './middlewares/request_structure_middleware';
-import IEventServer from './models/events_server_interface';
-import webSocketEvents from './web_socket_events';
+import IEventServer, { IEventCallback } from './models/events_server_interface';
+// import webSocketEvents from './web_socket_events';
+import { IEventHandler } from './models/event_handler_interface';
 
-class WebSocketServer {
+class WebSocketServer implements IEventHandler {
     private webSocketServer: WebSocket.Server;
     private clients: { [key: string]: WebSocket };
     private pubSub: PubSub;
@@ -42,7 +43,8 @@ class WebSocketServer {
         this.webSocketServer.on('close', this.onClose);
         this.pubSub.subscribe().on('data', this.onPubMessage.bind(this)).on('error', console.log);
 
-        this.events.push(...webSocketEvents);
+
+        // this.events.push(...webSocketEvents);
     }
 
     close(): void {
@@ -69,7 +71,7 @@ class WebSocketServer {
     }
 
     private onMessage(data: WebSocket.Data, client: WebSocket, clienId: string): void {
-        if (!requestStructureMiddleware(data, client, this.events.map(e=>e.event))) return;
+        if (!requestStructureMiddleware(data, client, this.events.map(e=>e.name))) return;
 
         let dataParsed: any = JSON.parse(data.toString());
 
@@ -81,7 +83,7 @@ class WebSocketServer {
             headers: dataParsed['headers'],
         });
         
-        const event: IEventServer | undefined = this.events.find((e) => e.event == req.event);
+        const event: IEventServer | undefined = this.events.find((e) => e.name == req.event);
         if (event == undefined) return;
         if ((event.middlewares?.length || 0) > 0) {
             for (const middleware of (event.middlewares || [])) {
@@ -112,16 +114,20 @@ class WebSocketServer {
 
     }
 
+    addEventHandler(event: IEventServer):void {
+        this.events.push(event)
+    }
+
     private addEvent(name: string, callback: (req: WebSocketRequest, res: any) => void, moreOptions?: {
         middlewares: Array<(req: WebSocketRequest, res: any,) => boolean>
     }): void {
         if (moreOptions?.middlewares == undefined) this.events.push({
-            event: name,
+            name,
             callback: callback,
             middlewares: []
         });
         else this.events.push({
-            event: name,
+            name,
             callback: callback,
             middlewares: moreOptions.middlewares
         });

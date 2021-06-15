@@ -1,8 +1,10 @@
 import WebSocketRequest from "./web_socket_request";
 
+export type IEventCallback = (req: WebSocketRequest, res: any) => void
+
 interface IEventServer{
-    readonly event:string;
-    readonly callback: (req: WebSocketRequest, res: any) => void;
+    readonly name:string;
+    readonly callback: IEventCallback;
     readonly middlewares?: Array<(req: WebSocketRequest, res: any) => boolean> | undefined;
 }
 
