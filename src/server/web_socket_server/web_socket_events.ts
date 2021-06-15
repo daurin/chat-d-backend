@@ -1,15 +1,18 @@
 import IEventServer from "./models/events_server_interface";
+import { IEventHandler } from "./models/event_handler_interface";
 import WebSocketRequest from "./models/web_socket_request";
 
 const webSocketEvents: Array<IEventServer> = [
     {
-        event: 'add-message',
+        name: 'add-message',
         callback: (req: WebSocketRequest, res: any) => void {}
     },
     {
-        event: 'delete-message',
+        name: 'delete-message',
         callback: (req: WebSocketRequest, res: any) => void {}
     },
 ];
 
-export default webSocketEvents;
+export const configureWebSocketEventHandlers = (socketServer: IEventHandler):void=> {
+    webSocketEvents.forEach((event)=>socketServer.addEventHandler(event));
+}

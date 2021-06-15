@@ -1,6 +1,7 @@
 import HttpServer from "./server/http_server";
 import WebSocketServer from './server/web_socket_server/web_socket_server';
 import PubSub from './server/pub_sub/pub_sub';
+import { configureWebSocketEventHandlers } from "./server/web_socket_server/web_socket_events";
 
 const httpServer = new HttpServer();
 const pubSubServer = new PubSub();
@@ -10,6 +11,8 @@ const webSocketServer = new WebSocketServer({
 });
 httpServer.init();
 webSocketServer.init();
+
+configureWebSocketEventHandlers(webSocketServer);
 
 
 process.on('SIGTERM', () => {
