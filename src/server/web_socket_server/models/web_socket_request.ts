@@ -15,7 +15,7 @@ class WebSocketRequest {
 
     readonly id?: string | undefined;
     readonly event: string;
-    readonly client: WebSocket;
+    readonly clientOwner: WebSocket;
     readonly data: any;
 
     constructor(params: {
@@ -27,7 +27,7 @@ class WebSocketRequest {
     }) {
         this.id=params.id;
         this.event=params.event;
-        this.client=params.client;
+        this.clientOwner=params.client;
         this.data=params.data;
     }
 }

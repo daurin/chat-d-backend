@@ -9,6 +9,7 @@ import requestStructureMiddleware from './middlewares/request_structure_middlewa
 import IEventServer, { IEventCallback } from './models/events_server_interface';
 // import webSocketEvents from './web_socket_events';
 import { IEventHandler } from './models/event_handler_interface';
+import WebSocketResponse from './models/web_scoket_response';
 
 class WebSocketServer implements IEventHandler {
     private webSocketServer: WebSocket.Server;
@@ -42,9 +43,6 @@ class WebSocketServer implements IEventHandler {
         this.webSocketServer.on('connection', this.onConnection);
         this.webSocketServer.on('close', this.onClose);
         this.pubSub.subscribe().on('data', this.onPubMessage.bind(this)).on('error', console.log);
-
-
-        // this.events.push(...webSocketEvents);
     }
 
     close(): void {
@@ -82,16 +80,30 @@ class WebSocketServer implements IEventHandler {
             data: dataParsed['data'],
             headers: dataParsed['headers'],
         });
+
+        const res: WebSocketResponse = new WebSocketResponse({
+            id: dataParsed['id'] ,
+            event: dataParsed['event'],
+            pubSub: this.pubSub,
+            client: client,
+            clientId:clienId,
+            clients: this.clients,
+        });
         
         const event: IEventServer | undefined = this.events.find((e) => e.name == req.event);
         if (event == undefined) return;
         if ((event.middlewares?.length || 0) > 0) {
+            let allMiddlewaresPassed:boolean=true;
             for (const middleware of (event.middlewares || [])) {
-                const next: boolean = middleware(req, undefined);
-                if (!next) break;
+                const next: boolean = middleware(req, res);
+                if (!next){
+                    allMiddlewaresPassed=false;
+                    break;
+                };
             }
+            if(allMiddlewaresPassed)event.callback(req,res);
         }
-        else event.callback(req,undefined);
+        else event.callback(req,res);
 
     }
 
@@ -124,7 +136,7 @@ class WebSocketServer implements IEventHandler {
         if (moreOptions?.middlewares == undefined) this.events.push({
             name,
             callback: callback,
-            middlewares: []
+            middlewares: [],
         });
         else this.events.push({
             name,

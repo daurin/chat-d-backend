@@ -1,6 +1,5 @@
 import WebSocket from 'ws';
 import Joi, { string } from 'joi';
-import { json } from 'express';
 
 export default (data: WebSocket.Data, client: WebSocket, events: Array<string>): boolean => {
     if ((typeof data) != typeof '') {
