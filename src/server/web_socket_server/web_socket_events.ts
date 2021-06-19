@@ -5,11 +5,13 @@ import WebSocketRequest from "./models/web_socket_request";
 const webSocketEvents: Array<IEventServer> = [
     {
         name: 'add-message',
-        callback: (req: WebSocketRequest, res: any) => void {}
+        callback:async (req: WebSocketRequest, res: any) => void {
+            
+        },
     },
     {
         name: 'delete-message',
-        callback: (req: WebSocketRequest, res: any) => void {}
+        callback:async (req: WebSocketRequest, res: any) => void {}
     },
 ];
 

@@ -68,7 +68,7 @@ class WebSocketServer implements IEventHandler {
         console.log(`Clients connected: ${this.clientCount}`);
     }
 
-    private onMessage(data: WebSocket.Data, client: WebSocket, clienId: string): void {
+    private async onMessage (data: WebSocket.Data, client: WebSocket, clienId: string): Promise<void> {
         if (!requestStructureMiddleware(data, client, this.events.map(e=>e.name))) return;
 
         let dataParsed: any = JSON.parse(data.toString());
@@ -95,15 +95,21 @@ class WebSocketServer implements IEventHandler {
         if ((event.middlewares?.length || 0) > 0) {
             let allMiddlewaresPassed:boolean=true;
             for (const middleware of (event.middlewares || [])) {
-                const next: boolean = middleware(req, res);
+                const next: boolean =await middleware(req, res);
                 if (!next){
                     allMiddlewaresPassed=false;
                     break;
                 };
             }
-            if(allMiddlewaresPassed)event.callback(req,res);
+            if(allMiddlewaresPassed){
+                await event.callback(req,res);
+                if(event.dispatch!=undefined)event.dispatch(req,res);
+            }
         }
-        else event.callback(req,res);
+        else{
+            await event.callback(req,res);
+            if(event.dispatch!=undefined)event.dispatch(req,res);
+        }
 
     }
 
@@ -128,21 +134,6 @@ class WebSocketServer implements IEventHandler {
 
     addEventHandler(event: IEventServer):void {
         this.events.push(event)
-    }
-
-    private addEvent(name: string, callback: (req: WebSocketRequest, res: any) => void, moreOptions?: {
-        middlewares: Array<(req: WebSocketRequest, res: any,) => boolean>
-    }): void {
-        if (moreOptions?.middlewares == undefined) this.events.push({
-            name,
-            callback: callback,
-            middlewares: [],
-        });
-        else this.events.push({
-            name,
-            callback: callback,
-            middlewares: moreOptions.middlewares
-        });
     }
 }
 
