@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, timingSafeEqual } from 'crypto';
 import Http, { IncomingMessage } from 'http';
 import WebSocket from 'ws';
 import PubSubMessage from '../pub_sub/models/pub_sub_message';
@@ -138,11 +138,20 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
 
     private onPubMessage(message: PubSubMessage) {
         if (message.target == undefined) return this.onBroadCast(message);
-        else if (message.target != undefined) {
+        else if (message.target != undefined && message.type == 'user') {
             const webSocket: WebSocket = this.clients[message.target];
             if (webSocket == null) return;
             if (webSocket.readyState != WebSocket.OPEN) return;
             webSocket.send(message.data);
+        } else if(message.target && message.type == 'topic') {
+            if(this.topics[message.target]) {
+                var clientIds =  this.topics[message.target];
+
+                clientIds.forEach((clientKey) => {
+                    if (!this.clients.hasOwnProperty(clientKey)) return;
+                    this.clients[clientKey].send(message);
+                });
+            }
         }
 
     }
@@ -180,15 +189,25 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
 
     public sendToTopic(message: any, topic: string): void {
         if (!this.topics.hasOwnProperty(topic)) return;
-        let clientsId: Array<string> = this.topics[topic];
-        clientsId.forEach((clientKey) => {
-            if (!this.clients.hasOwnProperty(clientKey)) return;
-            this.clients[clientKey].send(message);
-        });
+
+        this.pubSub.publish(new PubSubMessage({
+            data: message,
+            target: topic,
+            type: 'topic',
+        }));
+
     }
     public sendToTarget(message: any, target: string): void {
+        
         if (!this.clients.hasOwnProperty(target)) return;
-        this.clients[target].send(message);
+
+        this.pubSub.publish(new PubSubMessage(
+            {
+                data: message,
+                target,
+                type: 'user'
+            }
+        ))
     }
 }
 

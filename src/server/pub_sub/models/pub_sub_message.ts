@@ -1,11 +1,13 @@
 class PubSubMessage {
     readonly target?: string | undefined;
     readonly data: any;
+    readonly type?: PubSubMessageType;
     
 
     constructor(params: PubSubMessageParams) {
         this.target = params.target || undefined;
         this.data = params.data;
+        this.type = params.type ?? 'user';
     }
 
     static fromJson(json: PubSubMessageParams): PubSubMessage {
@@ -13,6 +15,7 @@ class PubSubMessage {
             {
                 target: json.target,
                 data: json.data,
+                type: json.type
             }
         );
 
@@ -21,7 +24,8 @@ class PubSubMessage {
     toJson(): Object {
         return {
             data: this.data,
-            targets: this.target || undefined
+            targets: this.target || undefined,
+            type: this.type
         };
     }
 }
@@ -29,6 +33,9 @@ class PubSubMessage {
 interface PubSubMessageParams{
     readonly target?: string | undefined;
     readonly data: any;
+    readonly type?: PubSubMessageType;
 }
+
+type PubSubMessageType = 'user' | 'topic'
 
 export default PubSubMessage;
