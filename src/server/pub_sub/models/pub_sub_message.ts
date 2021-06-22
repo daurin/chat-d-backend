@@ -7,7 +7,7 @@ class PubSubMessage {
     constructor(params: PubSubMessageParams) {
         this.target = params.target || undefined;
         this.data = params.data;
-        this.type = params.type ?? 'user';
+        this.type = params.type ?? PubSubMessageType.User;
     }
 
     static fromJson(json: PubSubMessageParams): PubSubMessage {
@@ -36,6 +36,9 @@ interface PubSubMessageParams{
     readonly type?: PubSubMessageType;
 }
 
-type PubSubMessageType = 'user' | 'topic'
+export enum PubSubMessageType{
+    User,
+    Topic
+}
 
 export default PubSubMessage;

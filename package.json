@@ -11,7 +11,7 @@
     "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf ./build && tsc",
-    "start-nodemon": "NODE_ENV='development' nodemon index.ts",
+    "start-dev-watch": "ts-node-dev src/index.ts",
     "start-dev": "npm run build && node build/index.js",
     "start-pm2": "pm2 start --name chat -i max ./build/index.js"
   },
@@ -21,18 +21,24 @@
   "devDependencies": {
     "@types/express": "^4.17.12",
     "@types/node": "^15.12.0",
+    "@types/nodemailer": "^6.4.2",
     "@types/redis": "^2.8.29",
     "@types/uuid": "^8.3.0",
     "@types/ws": "^7.4.4",
     "nodemon": "^2.0.7",
     "rimraf": "^3.0.2",
     "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.8",
     "typescript": "^4.3.2"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.4.5",
     "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "joi": "^17.4.0",
+    "mongoose": "^5.13.0",
+    "nodemailer": "^6.6.2",
     "redis": "^3.1.2",
     "uuid": "^8.3.2",
     "ws": "^7.4.6"

@@ -1,7 +1,7 @@
 import { randomUUID, timingSafeEqual } from 'crypto';
 import Http, { IncomingMessage } from 'http';
 import WebSocket from 'ws';
-import PubSubMessage from '../pub_sub/models/pub_sub_message';
+import PubSubMessage, { PubSubMessageType } from '../pub_sub/models/pub_sub_message';
 import { v1 as generateUuid } from 'uuid'
 import PubSub from '../pub_sub/pub_sub';
 import WebSocketRequest from './models/web_socket_request';
@@ -61,14 +61,6 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
         this.subscribeToTopic(clientId, 'room21');
         this.subscribeToTopic(clientId, 'room46');
         this.subscribeToTopic(clientId, 'room367');
-
-        this.clients[clientId]?.send((JSON.stringify(this.topics)));
-
-        setTimeout(() => {
-            this.unSubscribeToTopic(clientId, 'room46');
-            this.unSubscribeToTopic(clientId, 'room367');
-            this.clients[clientId]?.send((JSON.stringify(this.topics)));
-        }, 5000);
     }
 
     private onClose(webSocket: WebSocket): void {
@@ -83,7 +75,12 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
     }
 
     private async onMessage(data: WebSocket.Data, client: WebSocket, clienId: string): Promise<void> {
-        if (!requestStructureMiddleware(data, client, this.events.map(e => e.name))) return;
+        if (!requestStructureMiddleware({
+            client: client,
+            data:data,
+            events: this.events.map(e => e.name),
+            sender: this,
+        })) return;
 
         let dataParsed: any = JSON.parse(data.toString());
 
@@ -138,14 +135,14 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
 
     private onPubMessage(message: PubSubMessage) {
         if (message.target == undefined) return this.onBroadCast(message);
-        else if (message.target != undefined && message.type == 'user') {
+        else if (message.target != undefined && message.type == PubSubMessageType.User) {
             const webSocket: WebSocket = this.clients[message.target];
             if (webSocket == null) return;
             if (webSocket.readyState != WebSocket.OPEN) return;
             webSocket.send(message.data);
-        } else if(message.target && message.type == 'topic') {
+        } else if(message.target && message.type == PubSubMessageType.Topic) {
             if(this.topics[message.target]) {
-                var clientIds =  this.topics[message.target];
+                let clientIds:Array<string> =  this.topics[message.target];
 
                 clientIds.forEach((clientKey) => {
                     if (!this.clients.hasOwnProperty(clientKey)) return;
@@ -193,7 +190,7 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
         this.pubSub.publish(new PubSubMessage({
             data: message,
             target: topic,
-            type: 'topic',
+            type: PubSubMessageType.Topic,
         }));
 
     }
@@ -205,9 +202,13 @@ class WebSocketServer implements IEventHandler, IWebSocketSender {
             {
                 data: message,
                 target,
-                type: 'user'
+                type: PubSubMessageType.User
             }
-        ))
+        ));
+    }
+
+    public send(message:any,clientSocket:WebSocket):void{
+        clientSocket.send(JSON.stringify(message));
     }
 }
 

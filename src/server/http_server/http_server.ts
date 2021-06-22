@@ -4,12 +4,16 @@ import { Socket } from 'net';
 
 class HttpServer {
     // httpServer: Http.Server;
-    private appExpress: Application;
+    readonly appExpress: Application;
     private httpServer: Http.Server;
+    private port:number;
 
-    constructor() {
+    constructor(options?:{
+        port?: number,
+    }) {
         this.appExpress = Express();
         this.httpServer = Http.createServer(this.appExpress);
+        this.port=options?.port ?? 6969;
     }
 
     get server(): Http.Server {
@@ -17,12 +21,13 @@ class HttpServer {
     }
 
     init(): void {
-        let port: Number = 6969;
-        this.httpServer.listen(port, () => {
-            console.log(`Server is listening on ${port}!`);
+        this.httpServer.listen(this.port, () => {
+            console.log(`Server is listening on ${this.port}!`);
         });
 
         this.httpServer.on('upgrade',this.onUpgrade);
+        this.appExpress.use(Express.json());
+        this.appExpress.use(Express.urlencoded({extended:true}));
     }
 
     private onUpgrade(req:IncomingMessage, socket:Socket, head:Buffer):void{

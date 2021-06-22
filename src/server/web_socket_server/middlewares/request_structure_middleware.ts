@@ -1,12 +1,20 @@
 import WebSocket from 'ws';
 import Joi, { string } from 'joi';
+import { IWebSocketSender } from '../models/web_socket_sender_interface';
 
-export default (data: WebSocket.Data, client: WebSocket, events: Array<string>): boolean => {
+// export default (data: WebSocket.Data, sender: IWebSocketSender, events: Array<string>): boolean => {
+export default (params: {
+    client: WebSocket,
+    data: WebSocket.Data,
+    events: Array<string>,
+    sender: IWebSocketSender,
+}): boolean => {
+    let {client,data,events,sender}= params;
     if ((typeof data) != typeof '') {
-        client.send(JSON.stringify({
+        sender.send({
             'error': 'Bad Request',
             'success': false
-        }));
+        },client);
         return false;
     }
     let dataParsed: any;
@@ -14,10 +22,10 @@ export default (data: WebSocket.Data, client: WebSocket, events: Array<string>):
         dataParsed = JSON.parse(data.toString());
     }
     catch (err) {
-        client.send(JSON.stringify({
+        sender.send({
             'error': 'Json invalid',
             'success': false
-        }));
+        },client);
         return false;
     }
 
@@ -59,7 +67,7 @@ export default (data: WebSocket.Data, client: WebSocket, events: Array<string>):
     }
 
     if (jsonResponse['errors'].length > 0) {
-        client.send(JSON.stringify(jsonResponse));
+        sender.send(jsonResponse,client);
         return false;
     }
     return true;

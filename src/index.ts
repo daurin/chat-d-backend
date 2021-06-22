@@ -1,9 +1,20 @@
-import HttpServer from "./server/http_server";
+import HttpServer from "./server/http_server/http_server";
 import WebSocketServer from './server/web_socket_server/web_socket_server';
 import PubSub from './server/pub_sub/pub_sub';
 import { configureWebSocketEventHandlers } from "./server/web_socket_server/web_socket_events";
+import configureRouterServer from "./server/http_server/configure_routes";
+import dotenv from 'dotenv';
 
-const httpServer = new HttpServer();
+// Config envarioment
+const NODE_ENV=process.env.NODE_ENV || 'development';
+dotenv.config({
+    path: __dirname+`/config/envarioment/.env.${NODE_ENV}`
+});
+
+// Config server
+const httpServer = new HttpServer({
+    port: Number(process.env.SERVER_PORT||5645)
+});
 const pubSubServer = new PubSub();
 const webSocketServer = new WebSocketServer({
     httpServer: httpServer.server,
@@ -13,6 +24,7 @@ httpServer.init();
 webSocketServer.init();
 
 configureWebSocketEventHandlers(webSocketServer);
+configureRouterServer(httpServer.appExpress);
 
 
 process.on('SIGTERM', () => {
