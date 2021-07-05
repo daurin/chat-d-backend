@@ -1,7 +1,8 @@
 import Gender from "../../models/gender";
+import User from "../../models/user";
 
 export default abstract class ICreateUserRepository {
-    abstract call(params: CreateUserParams): Promise<void>;
+    abstract call(params: CreateUserParams): Promise<User>;
 }
 
 export interface CreateUserParams {

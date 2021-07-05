@@ -4,6 +4,7 @@ import PubSub from './server/pub_sub/pub_sub';
 import { configureWebSocketEventHandlers } from "./server/web_socket_server/web_socket_events";
 import configureRouterServer from "./server/http_server/configure_routes";
 import dotenv from 'dotenv';
+import Mongo from "./modules/shared/services/mongo/mongodb";
 
 // Config envarioment
 const NODE_ENV=process.env.NODE_ENV || 'development';
@@ -22,6 +23,9 @@ const webSocketServer = new WebSocketServer({
 });
 httpServer.init();
 webSocketServer.init();
+new Mongo().connect(process.env.MONGO_URI||'').catch(err=>{
+    console.log(err);
+});
 
 configureWebSocketEventHandlers(webSocketServer);
 configureRouterServer(httpServer.appExpress);

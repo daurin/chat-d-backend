@@ -3,6 +3,6 @@ let router = express.Router();
 
 import postUser from '../controllers/post_user';
 
-router.post('/user', postUser);
+router.post('/users', postUser);
 
 export default router;

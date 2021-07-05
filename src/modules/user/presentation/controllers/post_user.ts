@@ -1,46 +1,41 @@
 import { Request, Response } from "express";
-import Joi from "joi";
+import { ValidationGroupException } from "../../../shared/domain/exception/validation_exception";
 import Gender from "../../domain/models/gender";
 import CreateUser from "../../domain/usecases/create_user/create_user";
 
 const postUser = async (req: Request, res: Response) => {
     try {
-        const schema = Joi.object({
-            email: Joi.string().email().required(),
-            // username: Joi.string().max(15).required(),
-            name: Joi.string().max(30).required(),
-            number: Joi.string().max(16).regex(/^\+\d+(-\d+)*$/).required(),
-            birthdate: Joi.date().required(),
-            gender: Joi.string().valid(...Object.values(Gender)).required(),
-        });
-        const resultValidate: Joi.ValidationResult = schema.validate(req.body, {
-            abortEarly: false
-        });
-        if(resultValidate.error!=undefined){
-            res.status(400).send({
-                errors:resultValidate.error.details,
-                message: resultValidate.error.message,
+        await (new CreateUser()).call({
+            username: req.body.username,
+            name: req.body.name,
+            email: req.body.email,
+            number: req.body.number,
+            birthdate: new Date(req.body.birthdate),
+            gender: req.body.gender as Gender,
+        })
+            .then(user => {
+                res.status(201).send(user.toJson());
+            })
+            .catch((err) => {
+                if (err instanceof ValidationGroupException) {
+                    res.status(400).send({
+                        errors: err.params.map((e) => {
+                            return {
+                                name: e.name,
+                                message: e.message,
+                                type: e.type,
+                            };
+                        })
+                    });
+                }
+                else throw err;
             });
-            return;   
-        }
-        await (new CreateUser()).call(
-            {
-                username: req.body.username,
-                name: req.body.name,
-                email: req.body.email,
-                number: req.body.number,
-                birthdate: req.body.birthdate,
-                gender: req.body.gender,
-            }
-        ).catch(err=>{
-            res.status(201).send(err.toString());
-        }).then(value=>{
-            res.send(`POST request to the user: ${req.body.email}`);
-        });
+
+
     } catch (err) {
         console.log(err);
         res.status(500);
-        res.send(err.toString());
+        res.send(err);
     }
 };
 
